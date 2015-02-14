@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 
 	"github.com/revel/revel"
 )
@@ -14,16 +15,17 @@ type HTTPBackEnd struct {
 	*revel.Controller
 }
 
-// GitReceivePack (deal with git push)
-func (h HTTPBackEnd) GitReceivePack() revel.Result {
+// GitUploadPack (deal with git clone)
+func (h HTTPBackEnd) GitUploadPack() revel.Result {
 	h.Response.Out.Header().Add("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
 	h.Response.Out.Header().Add("Pragma", "no-cache")
 	h.Response.Out.Header().Add("Cache-Control", "no-cache, max-age=0, must-revalidate")
-	h.Response.Out.Header().Add("Content-Type", "application/x-git-receive-pack-result")
+	h.Response.Out.Header().Del("Content-Type")
+	h.Response.Out.Header().Add("Content-Type", "application/x-git-upload-pack-result")
 
 	repo := "/Users/stephenzhen/gitcent-repos/test"
 	git := "/usr/bin/git"
-	cmd := exec.Command(git, "receive-pack", repo, "--stateless-rpc")
+	cmd := exec.Command(git, "upload-pack", "--stateless-rpc", repo)
 	out, _ := cmd.StdoutPipe()
 	input, _ := cmd.StdinPipe()
 	cmd.Stderr = os.Stderr
@@ -32,26 +34,53 @@ func (h HTTPBackEnd) GitReceivePack() revel.Result {
 	cmd.Start()
 	cmd.Wait()
 
-	return h.RenderText("")
+	return nil
+}
+
+// GitReceivePack (deal with git push)
+func (h HTTPBackEnd) GitReceivePack() revel.Result {
+	h.Response.Out.Header().Add("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
+	h.Response.Out.Header().Add("Pragma", "no-cache")
+	h.Response.Out.Header().Add("Cache-Control", "no-cache, max-age=0, must-revalidate")
+	h.Response.Out.Header().Del("Content-Type")
+	h.Response.Out.Header().Add("Content-Type", "application/x-git-receive-pack-result")
+
+	repo := "/Users/stephenzhen/gitcent-repos/test"
+	git := "/usr/bin/git"
+	cmd := exec.Command(git, "receive-pack", "--stateless-rpc", repo)
+	out, _ := cmd.StdoutPipe()
+	input, _ := cmd.StdinPipe()
+	cmd.Stderr = os.Stderr
+	go io.Copy(h.Response.Out, out)
+	go io.Copy(input, h.Request.Body)
+	cmd.Start()
+	cmd.Wait()
+
+	return nil
 }
 
 // GetInfoRefs (got git repo refs)
 func (h HTTPBackEnd) GetInfoRefs(service string) revel.Result {
+	//service: git-receive-pack|git-upload-pack
+	r, _ := regexp.Compile("git-")
+	action := r.ReplaceAllString(service, "")
+	r, _ = regexp.Compile("-pack")
+	action = r.ReplaceAllString(action, "")
 	h.Response.Out.Header().Add("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
 	h.Response.Out.Header().Add("Pragma", "no-cache")
 	h.Response.Out.Header().Add("Cache-Control", "no-cache, max-age=0, must-revalidate")
-	h.Response.Out.Header().Add("Content-Type", "application/x-git-receive-pack-advertisement")
+	h.Response.Out.Header().Del("Content-Type")
+	h.Response.Out.Header().Add("Content-Type", "application/x-git-"+action+"-pack-advertisement")
 
 	repo := "/Users/stephenzhen/gitcent-repos/test"
 	git := "/usr/bin/git"
-
-	refs, _ := exec.Command(git, "receive-pack", repo, "--stateless-rpc", "--advertise-refs").Output()
-
-	act := "# service=git-receive-pack\n"
+	refs, _ := exec.Command(git, action+"-pack", "--stateless-rpc", "--advertise-refs", repo).Output()
+	act := "# service=git-" + action + "-pack\n"
 	l := len(act) + 4
 	s := "00" + fmt.Sprintf("%x", l) + act
 	h.Response.Out.Write([]byte(s))
 	h.Response.Out.Write([]byte{'0', '0', '0', '0'})
 	h.Response.Out.Write(refs)
-	return h.RenderText("")
+
+	return nil
 }

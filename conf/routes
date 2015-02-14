@@ -17,3 +17,4 @@ GET     /public/*filepath                       Static.Serve("public")
 
 GET /:group/:repo/info/refs HTTPBackEnd.GetInfoRefs
 POST /:group/:repo/git-receive-pack HTTPBackEnd.GitReceivePack
+POST /:group/:repo/git-upload-pack HTTPBackEnd.GitUploadPack
