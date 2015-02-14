@@ -16,3 +16,4 @@ GET     /public/*filepath                       Static.Serve("public")
 *       /:controller/:action                    :controller.:action
 
 GET /:group/:repo/info/refs HTTPBackEnd.GetInfoRefs
+POST /:group/:repo/git-receive-pack HTTPBackEnd.GitReceivePack
