@@ -1,6 +1,10 @@
 package app
 
-import "github.com/revel/revel"
+import (
+	"gitcent-web/app/services"
+
+	"github.com/revel/revel"
+)
 
 func init() {
 	// Filters is the default set of global filters.
@@ -18,7 +22,9 @@ func init() {
 		revel.CompressFilter,          // Compress the result.
 		revel.ActionInvoker,           // Invoke the action.
 	}
-
+	revel.OnAppStart(func() {
+		services.InitServices(revel.Config)
+	})
 	// register startup functions with OnAppStart
 	// ( order dependent )
 	// revel.OnAppStart(InitDB)
