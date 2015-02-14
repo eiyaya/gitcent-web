@@ -14,3 +14,5 @@ GET     /public/*filepath                       Static.Serve("public")
 
 # Catch all
 *       /:controller/:action                    :controller.:action
+
+GET /:group/:repo/info/refs HTTPBackEnd.GetInfoRefs
