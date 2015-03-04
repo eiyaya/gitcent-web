@@ -18,13 +18,13 @@ type Payload struct {
 	Str string
 }
 
-func main() {
+func initGitSshd() {
 
 	config := &ssh.ServerConfig{
 		NoClientAuth: true,
 	}
 
-	privateBytes, err := ioutil.ReadFile("id_rsa")
+	privateBytes, err := ioutil.ReadFile("/Users/stephenzhen/.ssh/id_rsa")
 	if err != nil {
 		log.Fatal("Failed to load private key (./id_rsa)")
 	}
@@ -86,11 +86,11 @@ func handleGitCommands(chans <-chan ssh.NewChannel) {
 
 					switch command {
 					case "git-upload-pack":
-						cmd = exec.Command("/usr/bin/git-upload-pack", "/Users/stephenzhen/Projects/test.git")
+						cmd = exec.Command("/usr/bin/git-upload-pack", "/Users/stephenzhen/gitcent-repos/test")
 					case "git-receive-pack":
-						cmd = exec.Command("/usr/bin/git-receive-pack", "/Users/stephenzhen/Projects/test")
+						cmd = exec.Command("/usr/bin/git-receive-pack", "/Users/stephenzhen/gitcent-repos/test")
 					case "git-upload-archive":
-						cmd = exec.Command("/usr/bin/git-upload-archive", "/Users/stephenzhen/Projects/test.git")
+						cmd = exec.Command("/usr/bin/git-upload-archive", "/Users/stephenzhen/gitcent-repos/test")
 					}
 					out, _ := cmd.StdoutPipe()
 					input, _ := cmd.StdinPipe()
