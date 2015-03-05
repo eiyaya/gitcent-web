@@ -1,6 +1,7 @@
-# gitcent-web
-## TODO
-- global config
-- new repo from frontend
-- clone repo though http/ssh
-- push to repo though http/ssh
+# gitcent-web roadmap
+- `V0.1`
+  - [ ] group/user management
+  - [x] global config
+  - [ ] new repo from frontend
+  - [x] clone repo though http/ssh
+  - [x] push to repo though http/ssh
