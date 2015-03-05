@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/revel/revel"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -23,10 +24,10 @@ func initGitSshd() {
 	config := &ssh.ServerConfig{
 		NoClientAuth: true,
 	}
-
-	privateBytes, err := ioutil.ReadFile("/Users/stephenzhen/.ssh/id_rsa")
+	keyFile, _ := revel.Config.String("ssh.key")
+	privateBytes, err := ioutil.ReadFile(keyFile)
 	if err != nil {
-		log.Fatal("Failed to load private key (./id_rsa)")
+		log.Fatal("Failed to load private key " + keyFile)
 	}
 
 	private, err := ssh.ParsePrivateKey(privateBytes)
@@ -36,7 +37,9 @@ func initGitSshd() {
 
 	config.AddHostKey(private)
 
-	listener, err := net.Listen("tcp", "0.0.0.0:2022")
+	sshPort, _ := revel.Config.String("ssh.port")
+
+	listener, err := net.Listen("tcp", "0.0.0.0:"+sshPort)
 	if err != nil {
 		log.Fatal("Failed to listen on 2022")
 	}
@@ -80,17 +83,23 @@ func handleGitCommands(chans <-chan ssh.NewChannel) {
 					ssh.Unmarshal(req.Payload, &payload)
 
 					parts := strings.Fields(payload.Str)
-					fmt.Printf("run command: %s \n", payload.Str)
+					//fmt.Printf("run command: %s \n", payload.Str)
 					command := string(parts[0])
 					cmd := exec.Command("")
 
+					repoRoot, _ := revel.Config.String("repo.root")
+
+					repo := repoRoot + strings.Replace(string(parts[1]), "'", "", -1)[1:]
+
+					git, _ := revel.Config.String("git.cmd")
+
 					switch command {
 					case "git-upload-pack":
-						cmd = exec.Command("/usr/bin/git-upload-pack", "/Users/stephenzhen/gitcent-repos/test")
+						cmd = exec.Command(git, "upload-pack", repo)
 					case "git-receive-pack":
-						cmd = exec.Command("/usr/bin/git-receive-pack", "/Users/stephenzhen/gitcent-repos/test")
+						cmd = exec.Command(git, "receive-pack", repo)
 					case "git-upload-archive":
-						cmd = exec.Command("/usr/bin/git-upload-archive", "/Users/stephenzhen/gitcent-repos/test")
+						cmd = exec.Command(git, "upload-archive", repo)
 					}
 					out, _ := cmd.StdoutPipe()
 					input, _ := cmd.StdinPipe()
