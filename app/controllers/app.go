@@ -1,6 +1,10 @@
 package controllers
 
-import "github.com/revel/revel"
+import (
+	"gitcent-web/app/model"
+
+	"github.com/revel/revel"
+)
 
 type App struct {
 	*revel.Controller
@@ -8,4 +12,10 @@ type App struct {
 
 func (c App) Index() revel.Result {
 	return c.Render()
+}
+
+func (c App) RequireUser() (*model.User, error) {
+	user := &model.User{Name: "eiyaya", Email: "eiyaya@gmail.com"}
+
+	return user, nil
 }

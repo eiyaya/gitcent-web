@@ -12,11 +12,14 @@ import (
 
 // HTTPBackEnd (deal with git smart http protcol)
 type HTTPBackEnd struct {
-	*revel.Controller
+	App
 }
 
 // GitUploadPack (deal with git clone)
 func (h HTTPBackEnd) GitUploadPack(repo string, group string) revel.Result {
+
+	h.RequireUser()
+
 	h.Response.Out.Header().Add("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
 	h.Response.Out.Header().Add("Pragma", "no-cache")
 	h.Response.Out.Header().Add("Cache-Control", "no-cache, max-age=0, must-revalidate")
