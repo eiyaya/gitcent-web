@@ -9,9 +9,5 @@ import (
 //InitServices init background service
 func InitServices(config *revel.MergedConfig) {
 	fmt.Println(config.String("git.cmd"))
-	initGitSshd()
-}
-
-func initGitSshd() {
-
+	go initGitSshd()
 }
