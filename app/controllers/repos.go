@@ -3,7 +3,7 @@ package controllers
 import "github.com/revel/revel"
 
 type Repos struct {
-	*revel.Controller
+	App
 }
 
 func (r Repos) Index() revel.Result {
