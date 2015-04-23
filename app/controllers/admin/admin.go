@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"fmt"
 	"gitcent-web/app/controllers"
 
 	"github.com/revel/revel"
@@ -12,8 +11,10 @@ type Admin struct {
 }
 
 func (c Admin) Index() revel.Result {
-	user, _ := c.RequireUser()
-
-	fmt.Println(user.Name)
+	user, err := c.RequireUser()
+	if err != nil {
+		return c.RenderText("need login")
+	}
+	c.RenderArgs["user"] = user
 	return c.RenderTemplate("App/admin/index.html")
 }

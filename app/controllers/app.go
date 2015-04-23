@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"gitcent-web/app/model"
 
 	"github.com/revel/revel"
@@ -18,7 +19,11 @@ func (c App) Index() revel.Result {
 }
 
 func (c App) RequireUser() (*model.User, error) {
-	user := &model.User{Name: "eiyaya", Email: "eiyaya@gmail.com"}
-
-	return user, nil
+	user := &model.User{Name: "", Email: ""}
+	user.Name = c.Session["username"]
+	if user.Name == "" {
+		return nil, errors.New("not a login user")
+	} else {
+		return user, nil
+	}
 }
