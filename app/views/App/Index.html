@@ -1,17 +1,17 @@
 {{set . "title" "Home"}}
 {{template "header.html" .}}
 
-<header class="hero-unit" style="background-color:#A9F16C">
-  <div class="container">
-    <div class="row">
-      <div class="hero-text">
-        <h1>It works!</h1>
-        <p></p>
-      </div>
-    </div>
-  </div>
-</header>
-
+  <form class="ui form" style="width: 335px;" method="POST" action="/login">
+  <div class="ui input">
+  <input type="text" placeholder="User..." name="user">
+</div>
+<div class="ui input">
+<input type="Password" placeholder="Password..." name="password">
+</div>
+<div id="submit" class="ui primary button" onclick="form.submit">
+  Login
+</div>
+<input type="hidden" name="csrf_token" value="{{ .csrf_token }}" />
 <div class="container">
   <div class="row">
     <div class="span6">
@@ -19,5 +19,9 @@
     </div>
   </div>
 </div>
+</form>
+<script language=javascript>
+  $('#submit').click(function() {document.forms[0].submit();});
+</script>
 
 {{template "footer.html" .}}

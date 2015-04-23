@@ -22,3 +22,6 @@ POST /:group/:repo/git-upload-pack HTTPBackEnd.GitUploadPack
 #GET /repo/new Repos.NewRepo
 
 GET /admin  Admin.Index
+
+POST /login LoginD.UserLogin
+GET /logout LoginD.UserLogout

@@ -11,6 +11,9 @@ type App struct {
 }
 
 func (c App) Index() revel.Result {
+	//fmt.Println(c.Session["username"] + "logined")
+	c.FlashParams()
+	c.Flash.Success("I See You!")
 	return c.Render()
 }
 
