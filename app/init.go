@@ -26,6 +26,8 @@ func init() {
 		revel.CompressFilter,          // Compress the result.
 		revel.ActionInvoker,           // Invoke the action.
 	}
+	//csrf.ExemptedFullPath("/eiyaya")
+	csrf.ExemptedGlobs("/*/*/info/refs", "/*/*/git-receive-pack", "/*/*/git-upload-pack")
 	revel.OnAppStart(func() {
 		services.InitServices(revel.Config)
 		go http.ListenAndServe(":1234", nil)
