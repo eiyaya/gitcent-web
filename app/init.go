@@ -1,7 +1,9 @@
 package app
 
 import (
+	_ "expvar"
 	"gitcent-web/app/services"
+	"net/http"
 
 	"github.com/gitcent/revel-csrf"
 	"github.com/revel/revel"
@@ -26,6 +28,7 @@ func init() {
 	}
 	revel.OnAppStart(func() {
 		services.InitServices(revel.Config)
+		go http.ListenAndServe(":1234", nil)
 	})
 	// register startup functions with OnAppStart
 	// ( order dependent )
