@@ -1,13 +1,18 @@
 package app
 
 import (
-	_ "expvar"
+	"expvar"
 	"gitcent-web/app/services"
 	"net/http"
+	"runtime"
 
 	"github.com/gitcent/revel-csrf"
 	"github.com/revel/revel"
 )
+
+func goroutines() interface{} {
+	return runtime.NumGoroutine()
+}
 
 func init() {
 	// Filters is the default set of global filters.
@@ -30,6 +35,7 @@ func init() {
 	csrf.ExemptedGlobs("/*/*/info/refs", "/*/*/git-receive-pack", "/*/*/git-upload-pack")
 	revel.OnAppStart(func() {
 		services.InitServices(revel.Config)
+		expvar.Publish("Goroutines", expvar.Func(goroutines))
 		go http.ListenAndServe(":1234", nil)
 	})
 	// register startup functions with OnAppStart
