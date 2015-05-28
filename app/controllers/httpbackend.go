@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -33,9 +32,36 @@ func (h HTTPBackEnd) GitUploadPack(repo string, group string) revel.Result {
 	out, _ := cmd.StdoutPipe()
 	input, _ := cmd.StdinPipe()
 	cmd.Stderr = os.Stderr
-	go io.Copy(h.Response.Out, out)
-	go io.Copy(input, h.Request.Body)
+
+	go func() {
+		var err error
+		var bytes = make([]byte, 1024)
+		var read int
+		for {
+			read, err = h.Request.Body.Read(bytes)
+			input.Write(bytes[:read])
+			if err != nil {
+				fmt.Println("read http request err:", err)
+				input.Close()
+				break
+			}
+
+		}
+	}()
 	cmd.Start()
+	var err error
+	var bytes = make([]byte, 1024)
+	var read int
+	for {
+		read, err = out.Read(bytes)
+		h.Response.Out.Write(bytes[:read])
+		if err != nil {
+			out.Close()
+			fmt.Println("read cmd output err:", err)
+			break
+		}
+
+	}
 	cmd.Wait()
 
 	return nil
@@ -56,9 +82,35 @@ func (h HTTPBackEnd) GitReceivePack(repo string, group string) revel.Result {
 	out, _ := cmd.StdoutPipe()
 	input, _ := cmd.StdinPipe()
 	cmd.Stderr = os.Stderr
-	go io.Copy(h.Response.Out, out)
-	go io.Copy(input, h.Request.Body)
+	go func() {
+		var err error
+		var bytes = make([]byte, 1024)
+		var read int
+		for {
+			read, err = h.Request.Body.Read(bytes)
+			input.Write(bytes[:read])
+			if err != nil {
+				fmt.Println("read http request err:", err)
+				input.Close()
+				break
+			}
+
+		}
+	}()
 	cmd.Start()
+	var err error
+	var bytes = make([]byte, 1024)
+	var read int
+	for {
+		read, err = out.Read(bytes)
+		h.Response.Out.Write(bytes[:read])
+		if err != nil {
+			out.Close()
+			fmt.Println("read cmd output err:", err)
+			break
+		}
+
+	}
 	cmd.Wait()
 
 	return nil

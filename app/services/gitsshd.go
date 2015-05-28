@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -104,9 +103,36 @@ func handleGitCommands(chans <-chan ssh.NewChannel) {
 					out, _ := cmd.StdoutPipe()
 					input, _ := cmd.StdinPipe()
 					cmd.Stderr = os.Stderr
-					go io.Copy(channel, out)
-					go io.Copy(input, channel)
+
+					go func() {
+						var err error
+						var bytes = make([]byte, 1024)
+						var read int
+						for {
+							read, err = channel.Read(bytes)
+							input.Write(bytes[:read])
+							if err != nil {
+								fmt.Println("read ssh channel err:", err)
+								input.Close()
+								break
+							}
+
+						}
+					}()
 					cmd.Start()
+					var err error
+					var bytes = make([]byte, 1024)
+					var read int
+					for {
+						read, err = out.Read(bytes)
+						channel.Write(bytes[:read])
+						if err != nil {
+							out.Close()
+							fmt.Println("read cmd output err:", err)
+							break
+						}
+
+					}
 					cmd.Wait()
 					channel.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
 					channel.Close()
